@@ -4,9 +4,28 @@ namespace EquipmentApi.Services;
 
 public class EquipmentService : IEquipmentService
 {
-    public IEnumerable<Equipment> GetAll() => new[]
+    // ex 4
+    private readonly IConfiguration _configuration;
+
+    public EquipmentService(IConfiguration configuration)
     {
-        new Equipment(1, "Line1-Press", "Normal-Grace"),
-        new Equipment(2, "Line2-Motor", "Fault-Weidi"),
-    };
+        _configuration = configuration;
+    }
+    public IEnumerable<Equipment> GetAll()
+    {
+        // ex4
+        var threshold = _configuration.GetValue<int>("AlertThreshold", 5);
+
+        return new[]
+        {
+            new Equipment(1, "Line1-Press", "Normal", null),
+            new Equipment(2, "Line2-Motor", "Fault", "Motor overheating"),      
+        };
+        
+    }
+
+    public Equipment? GetById(int id)
+    {
+        return GetAll().FirstOrDefault(e => e.Id == id);
+    }
 }
