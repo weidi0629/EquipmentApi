@@ -19,6 +19,11 @@ public class EquipmentController : ControllerBase
     [HttpGet]
     public IEnumerable<Equipment> Get() => _service.GetAll(); //ex2
 
+    //ex 3
+    [HttpGet("/equipment/page")]
+    public IActionResult Page()
+        => Content("<h1>设备列表</h1><p>CNC-01</p >", "text/html");
+   
     /*  excercise 1
     public IEnumerable<Equipment> Get() => new[]
     {
