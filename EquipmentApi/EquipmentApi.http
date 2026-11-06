@@ -4,3 +4,26 @@ GET {{EquipmentApi_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+GET http://localhost:5056/api/Equipment
+### 应该返回 2 条
+
+GET http://localhost:5056/api/Equipment/1
+### 应该返回 Line1-Press
+
+POST http://localhost:5056/api/Equipment
+Content-Type: application/json
+
+{"name": "Line3-Drill", "status": "Normal"}
+### 应该返回 201，id 是 3
+
+PUT http://localhost:5056/api/Equipment/3
+Content-Type: application/json
+
+{"name": "Line3-Drill", "status": "Fault"}
+### 应该返回 200，status 变成 Fault
+
+DELETE http://localhost:5056/api/Equipment/3
+### 应该返回 204，没有响应体
+
+GET http://localhost:5056/api/Equipment
+### 应该又回到 2 条
