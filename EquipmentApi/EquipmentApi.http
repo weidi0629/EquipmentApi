@@ -1,29 +1,25 @@
 @EquipmentApi_HostAddress = http://localhost:5056
 
-GET {{EquipmentApi_HostAddress}}/weatherforecast/
-Accept: application/json
+### 查所有，应该返回 2 条
+GET {{EquipmentApi_HostAddress}}/api/Equipment
 
-###
-GET http://localhost:5056/api/Equipment
-### 应该返回 2 条
+### 查单个，应该返回 Line1-Press
+GET {{EquipmentApi_HostAddress}}/api/Equipment/3
 
-GET http://localhost:5056/api/Equipment/1
-### 应该返回 Line1-Press
-
-POST http://localhost:5056/api/Equipment
+### 新增，应该返回 201，id 是 3
+POST {{EquipmentApi_HostAddress}}/api/Equipment
 Content-Type: application/json
 
 {"name": "Line3-Drill", "status": "Normal"}
-### 应该返回 201，id 是 3
 
-PUT http://localhost:5056/api/Equipment/3
+### 修改，应该返回 200，status 变成 Fault
+PUT {{EquipmentApi_HostAddress}}/api/Equipment/3
 Content-Type: application/json
 
 {"name": "Line3-Drill", "status": "Fault"}
-### 应该返回 200，status 变成 Fault
 
-DELETE http://localhost:5056/api/Equipment/3
-### 应该返回 204，没有响应体
+### 删除，应该返回 204，没有响应体
+DELETE {{EquipmentApi_HostAddress}}/api/Equipment/3
 
-GET http://localhost:5056/api/Equipment
-### 应该又回到 2 条
+### 再查所有，应该又回到 2 条
+GET {{EquipmentApi_HostAddress}}/api/Equipment

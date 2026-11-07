@@ -5,7 +5,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+
+//每个请求一个实例，适合数据库连接
+//builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+
+// 每次就一个实例，适合内存里存数据不会掉
+builder.Services.AddSingleton<IEquipmentService, EquipmentService>();
+
 
 
 var app = builder.Build();
