@@ -9,7 +9,7 @@ builder.Services.AddControllers();
 //每个请求一个实例，适合数据库连接
 //builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 
-// 每次就一个实例，适合内存里存数据不会掉
+// 整个程序就一个实例，适合内存里存数据不会掉
 builder.Services.AddSingleton<IEquipmentService, EquipmentService>();
 
 
