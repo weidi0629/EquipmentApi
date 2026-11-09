@@ -1,10 +1,12 @@
 using EquipmentApi.Models;
 using EquipmentApi.Dtos;
+using EquipmentApi.Data;
 
 namespace EquipmentApi.Services;
 
 public class EquipmentService : IEquipmentService
 {
+    /*
     // ex 4
     private readonly IConfiguration _configuration;
 
@@ -25,11 +27,11 @@ public class EquipmentService : IEquipmentService
         // ex4
         var threshold = _configuration.GetValue<int>("AlertThreshold", 5);
 
-        /*return new[]
+        return new[]
         {
             new Equipment(1, "Line1-Press", "Normal", null),
             new Equipment(2, "Line2-Motor", "Fault", "Motor overheating"),      
-        };*/
+        };
 
         return _equipments;
         
@@ -65,6 +67,53 @@ public class EquipmentService : IEquipmentService
         if (existing == null) return false;
 
         _equipments.Remove(existing);
+        return true;
+    }*/  
+    // week 1 version 
+
+    private readonly AppDbContext _context;
+
+    public EquipmentService(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public IEnumerable<Equipment> GetAll()
+    {
+        return _context.Equipment.ToList();
+    }
+
+    public Equipment? GetById(int id)
+    {
+        return _context.Equipment.FirstOrDefault(e => e.Id == id);
+    }
+
+    public Equipment Create(CreateEquipmentDto dto)
+    {
+        var equipment = new Equipment(0, dto.Name, dto.Status, null);
+        _context.Equipment.Add(equipment);
+        _context.SaveChanges();
+        return equipment;
+    }
+
+    public Equipment? Update(int id, CreateEquipmentDto dto)
+    {
+        var existing = GetById(id);
+        if (existing == null) return null;
+
+        var updated = existing with { Name = dto.Name, Status = dto.Status };
+        _context.Entry(existing).CurrentValues.SetValues(updated);
+        _context.SaveChanges();
+        return updated;
+    }
+
+    public bool Delete(int id)
+    {
+        var existing = GetById(id);
+        if (existing == null) return false;
+
+        _context.Equipment.Remove(existing);
+        _context.SaveChanges();
         return true;
     }
 }
