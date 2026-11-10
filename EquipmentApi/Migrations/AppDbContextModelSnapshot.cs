@@ -47,13 +47,38 @@ namespace EquipmentApi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("EquipmentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EquipmentId");
+
                     b.ToTable("LogEntries");
+                });
+
+            modelBuilder.Entity("EquipmentApi.Models.LogEntry", b =>
+                {
+                    b.HasOne("EquipmentApi.Models.Equipment", "Equipment")
+                        .WithMany("Logs")
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Equipment");
+                });
+
+            modelBuilder.Entity("EquipmentApi.Models.Equipment", b =>
+                {
+                    b.Navigation("Logs");
                 });
 #pragma warning restore 612, 618
         }

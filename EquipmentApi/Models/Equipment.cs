@@ -8,4 +8,6 @@ public record Equipment(
     string Name,
     string? Status,
     string? LastError
-);
+){
+    public List<LogEntry> Logs { get; set; } = new();
+};

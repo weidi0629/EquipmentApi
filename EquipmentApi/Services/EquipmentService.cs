@@ -1,6 +1,8 @@
 using EquipmentApi.Models;
 using EquipmentApi.Dtos;
 using EquipmentApi.Data;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace EquipmentApi.Services;
 
@@ -71,11 +73,16 @@ public class EquipmentService : IEquipmentService
     }*/  
     // week 1 version 
 
-    private readonly AppDbContext _context;
 
-    public EquipmentService(AppDbContext context)
+
+    private readonly AppDbContext _context;
+    private readonly ILogger<EquipmentService> _logger;
+
+
+    public EquipmentService(AppDbContext context, ILogger<EquipmentService> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public IEnumerable<Equipment> GetAll()
@@ -116,4 +123,41 @@ public class EquipmentService : IEquipmentService
         _context.SaveChanges();
         return true;
     }
+
+    public IEnumerable<LogEntry> GetLogs(int equipmentId, int page, int pageSize)
+    {
+            var query = _context.LogEntries
+            .Where(l => l.EquipmentId == equipmentId)
+            .OrderByDescending(l => l.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize);
+
+        _logger.LogInformation("SQL: {Sql}", query.ToQueryString());
+
+        return query.ToList();
+    }
+
+    public int GetErrorLogCount(int equipmentId, int hours)
+    {
+        var since = DateTime.UtcNow.AddHours(-hours);
+        return _context.LogEntries
+            .Count(l => l.EquipmentId == equipmentId
+                && l.Level == "Error"
+                && l.CreatedAt >= since);
+    }
+
+    public LogEntry AddLog(int equipmentId, CreateLogEntryDto dto)
+    {
+        var log = new LogEntry
+        {
+            Message = dto.Message,
+            Level = dto.Level,
+            CreatedAt = DateTime.UtcNow,
+            EquipmentId = equipmentId
+        };
+        _context.LogEntries.Add(log);
+        _context.SaveChanges();
+        return log;
+    }
+
 }

@@ -16,4 +16,12 @@ public interface IEquipmentService
     Equipment? Update(int id, CreateEquipmentDto dto);
 
     bool Delete(int id);
+
+    IEnumerable<LogEntry> GetLogs(int equipmentId, int page, int pageSize);
+
+    int GetErrorLogCount(int equipmentId, int hours);
+
+    LogEntry AddLog(int equipmentId, CreateLogEntryDto dto);
+
+
 }

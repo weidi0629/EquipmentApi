@@ -23,3 +23,38 @@ DELETE {{EquipmentApi_HostAddress}}/api/Equipment/3
 
 ### 再查所有，应该又回到 2 条
 GET {{EquipmentApi_HostAddress}}/api/Equipment
+
+
+### logging 测试 week2 -2
+POST http://localhost:5056/api/equipment/1/logs
+Content-Type: application/json
+
+{"message": "Motor overheating", "level": "Error"}
+
+###
+
+POST http://localhost:5056/api/equipment/1/logs
+Content-Type: application/json
+
+{"message": "Routine check passed", "level": "Info"}
+
+###
+
+POST http://localhost:5056/api/equipment/1/logs
+Content-Type: application/json
+
+{"message": "Temperature high", "level": "Error"}
+
+
+### 查询log
+
+
+GET http://localhost:5056/api/equipment/1/logs?page=1&pageSize=2
+### 应该返回最新的 2 条
+
+GET http://localhost:5056/api/equipment/1/logs?page=2&pageSize=2
+### 应该返回剩下的 1 条
+
+GET http://localhost:5056/api/equipment/1/alerts?hours=24
+### 应该返回 errorCount: 2
+

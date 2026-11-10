@@ -69,6 +69,42 @@ public class EquipmentController : ControllerBase
         return Ok(dto);
     }
 
+    // week2 -2 logging
+    [HttpGet("{id}/logs")]
+    public IActionResult GetLogs(int id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        if (_service.GetById(id) == null)
+        {
+            return NotFound(new { error = "equipment not exist" });
+        }
+
+        var logs = _service.GetLogs(id, page, pageSize);
+        var result = logs.Select(l => new LogEntryDto
+        {
+            Id = l.Id,
+            Message = l.Message,
+            Level = l.Level,
+            CreatedAt = l.CreatedAt,
+            EquipmentId = l.EquipmentId
+        });
+        return Ok(result);
+
+
+    }
+
+    [HttpGet("{id}/alerts")]
+    public IActionResult GetAlerts(int id, [FromQuery] int hours = 24)
+    {
+        if (_service.GetById(id) == null)
+        {
+            return NotFound(new { error = "equipment not exist" });
+        }
+
+        var count = _service.GetErrorLogCount(id, hours);
+        return Ok(new { equipmentId = id, hours, errorCount = count });
+    }
+
+
     [HttpPost]
     public IActionResult Create([FromBody] CreateEquipmentDto dto)
     {
@@ -116,6 +152,31 @@ public class EquipmentController : ControllerBase
         }
 
         return NoContent();
+    }
+
+
+    [HttpPost("{id}/logs")]
+    public IActionResult AddLog(int id, [FromBody] CreateLogEntryDto dto)
+    {
+        /*if (_service.GetById(id) == null)
+        {
+            return NotFound(new { error = "equipment not exist" });
+        }
+
+        var log = _service.AddLog(id, dto);
+        return CreatedAtAction(nameof(GetLogs), new { id }, log);*/
+
+        var log = _service.AddLog(id, dto);
+        var result = new LogEntryDto
+        {
+            Id = log.Id,
+            Message = log.Message,
+            Level = log.Level,
+            CreatedAt = log.CreatedAt,
+            EquipmentId = log.EquipmentId
+        };
+        return CreatedAtAction(nameof(GetLogs), new { id }, result);
+
     }
 
 }
