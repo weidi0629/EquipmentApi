@@ -37,3 +37,59 @@ EquipmentApi/
 | POST | /api/Equipment | Create equipment; returns 201 on success |
 | PUT | /api/Equipment/{id} | Update equipment; returns 404 if not found |
 | DELETE | /api/Equipment/{id} | Delete equipment; returns 204 on success |
+
+
+SQL Notes
+1. JOIN — which device does each log belong to?
+sql
+
+
+SELECT e.Name, l.Message, l.CreatedAt
+FROM Equipment e
+JOIN LogEntries l ON l.EquipmentId = e.Id
+WHERE l.Level = 'Error';
+Result: 2 rows — "Motor overheating" and "Temperature high", both on the same device.
+Matches GET /api/Equipment/1/logs.
+
+EF equivalent: _context.Equipment.Include(e => e.Logs), or query LogEntries and read l.Equipment.Name — EF generates the JOIN for you.
+
+2. GROUP BY — error count per device
+sql
+
+
+SELECT EquipmentId, COUNT(*) AS ErrorCount
+FROM LogEntries
+WHERE Level = 'Error'
+GROUP BY EquipmentId;
+Result: EquipmentId 1 → ErrorCount 2.
+Matches GET /api/Equipment/1/alerts (errorCount: 2).
+
+EF equivalent:
+
+csharp
+
+
+_context.LogEntries
+    .Where(l => l.Level == "Error")
+    .GroupBy(l => l.EquipmentId)
+    .Select(g => new { EquipmentId = g.Key, ErrorCount = g.Count() });
+3. Index — make the logs query faster
+sql
+
+
+CREATE INDEX IX_LogEntry_Equipment_Timestamp ON LogEntries (EquipmentId, CreatedAt);
+EXPLAIN QUERY PLAN before creating the index:
+
+
+
+SEARCH LogEntries USING INDEX IX_LogEntries_EquipmentId (EquipmentId=?)
+USE TEMP B-TREE FOR ORDER BY
+After:
+
+
+
+SEARCH LogEntries USING INDEX IX_LogEntry_Equipment_Timestamp (EquipmentId=?)
+The foreign key column already had an auto-created index (EF Core creates indexes for foreign keys), so the lookup was already indexed. The composite index also covers ORDER BY CreatedAt DESC, so the temporary sort (TEMP B-TREE) is gone.
+
+Note: this index was created directly in the local equipment.db for learning. To keep it in code, add HasIndex in OnModelCreating and generate a migration.
+
