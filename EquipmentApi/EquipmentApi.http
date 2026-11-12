@@ -58,3 +58,16 @@ GET http://localhost:5056/api/equipment/1/logs?page=2&pageSize=2
 GET http://localhost:5056/api/equipment/1/alerts?hours=24
 ### 应该返回 errorCount: 2
 
+
+
+### get alerts  
+
+GET http://localhost:5056/api/equipment/1/alerts
+
+
+### POST  errors
+
+POST http://localhost:5056/api/equipment/1/logs
+Content-Type: application/json
+
+{"message": "Error test 1", "level": "Error"}

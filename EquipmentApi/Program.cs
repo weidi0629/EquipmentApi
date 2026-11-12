@@ -21,6 +21,7 @@ builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 // 整个程序就一个实例，适合内存里存数据不会掉
 //builder.Services.AddSingleton<IEquipmentService, EquipmentService>();
 
+builder.Services.AddScoped<IAlertService, AlertService>();
 
 
 var app = builder.Build();

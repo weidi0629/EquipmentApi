@@ -11,13 +11,16 @@ public class EquipmentController : ControllerBase
 {
     // excercise 2
     private readonly IEquipmentService _service;
+    private readonly IAlertService _alertService;
+
     private readonly ILogger<EquipmentController> _logger;
 
     public EquipmentController(IEquipmentService service,
-    ILogger<EquipmentController> logger)
+    ILogger<EquipmentController> logger,IAlertService alertService)
     {
         _service = service;
         _logger = logger;
+        _alertService = alertService;
     }
 
     [HttpGet]
@@ -92,6 +95,7 @@ public class EquipmentController : ControllerBase
 
     }
 
+    /*
     [HttpGet("{id}/alerts")]
     public IActionResult GetAlerts(int id, [FromQuery] int hours = 24)
     {
@@ -102,7 +106,22 @@ public class EquipmentController : ControllerBase
 
         var count = _service.GetErrorLogCount(id, hours);
         return Ok(new { equipmentId = id, hours, errorCount = count });
+    }*/
+
+    // week2 - 4 adding alert layer 
+    [HttpGet("{id}/alerts")]
+    public async Task<IActionResult> GetAlerts(int id)
+    {
+        if (_service.GetById(id) == null)
+        {
+            return NotFound(new { error = "equipment not exist" });
+        }
+
+        var errorCount = await _alertService.CountErrorsLast24hAsync(id);
+        var alert = await _alertService.ShouldAlertAsync(id);
+        return Ok(new { equipmentId = id, errorCount, alert });
     }
+
 
 
     [HttpPost]
