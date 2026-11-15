@@ -11,20 +11,21 @@ An equipment management Web API built with ASP.NET Core. A learning project.
 - EF Core + SQLite persistence (Code First migrations); data survives restarts
 - One-to-many equipment logs: paginated logs and error alerts per device
 - Alert rules in a separate `AlertService`: alerts when Error logs in the last 24 hours exceed a configurable threshold (`AlertThreshold` in appsettings.json)
-
+- xUnit tests for AlertService: 4 tests with an EF Core in-memory database, covering the 24-hour alert boundary (6 errors alert; 4 and 0 do not; a 25-hour-old error is excluded).
 ## Tech Stack
 
 - .NET / ASP.NET Core
 - C#
 - Entity Framework Core
 - SQLite
+- xUnit
 
 ## How to Run
 
 ```bash
 cd EquipmentApi
 dotnet run
-
+dotnet test tests/EquipmentApi.Tests
 
 Project Structure
 
@@ -37,6 +38,9 @@ EquipmentApi/
 ├── Services/         # Business logic
 ├── Program.cs        # Entry point
 └── EquipmentApi.http # Test requests
+├── tests/ # xUnit tests (AlertServiceTests)
+
+
 
 
 Endpoints
