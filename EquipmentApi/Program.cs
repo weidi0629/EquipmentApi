@@ -26,6 +26,14 @@ builder.Services.AddScoped<IAlertService, AlertService>();
 
 var app = builder.Build();
 
+// 启动时自动应用迁移，容器里没人手动跑 database update
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
