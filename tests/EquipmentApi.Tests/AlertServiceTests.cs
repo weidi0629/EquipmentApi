@@ -54,8 +54,8 @@ public class AlertServiceTests
         var result = await service.ShouldAlertAsync(1);
 
         // Assert
-        //Assert.True(result);
-        Assert.False(result);
+        Assert.True(result);
+        //Assert.False(result);
     }
 
     [Fact]
