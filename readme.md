@@ -39,7 +39,9 @@ EquipmentApi/
 ├── Program.cs        # Entry point
 └── EquipmentApi.http # Test requests
 ├── tests/ # xUnit tests (AlertServiceTests)
-
+├── .github/workflows/     # CI workflow (ci.yml)
+├── Dockerfile             # Multi-stage Docker build
+└── .dockerignore
 
 
 
