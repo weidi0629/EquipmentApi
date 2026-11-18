@@ -11,40 +11,56 @@ An equipment management Web API built with ASP.NET Core. A learning project.
 - EF Core + SQLite persistence (Code First migrations); data survives restarts
 - One-to-many equipment logs: paginated logs and error alerts per device
 - Alert rules in a separate `AlertService`: alerts when Error logs in the last 24 hours exceed a configurable threshold (`AlertThreshold` in appsettings.json)
-- xUnit tests for AlertService: 4 tests with an EF Core in-memory database, covering the 24-hour alert boundary (6 errors alert; 4 and 0 do not; a 25-hour-old error is excluded).
+- xUnit tests for AlertService: 4 tests with an EF Core in-memory database, covering the 24-hour alert boundary (6 errors alert; 4 and 0 do not; a 25-hour-old error is excluded)
+- Docker: multi-stage Dockerfile (SDK image to build, ASP.NET runtime image to run); EF Core migrations applied automatically on startup
+- CI/CD: GitHub Actions runs build + tests + Docker build on every push
+
 ## Tech Stack
 
-- .NET / ASP.NET Core
+- .NET 10 / ASP.NET Core
 - C#
 - Entity Framework Core
 - SQLite
 - xUnit
+- Docker
+- GitHub Actions
 
 ## How to Run
 
 ```bash
 cd EquipmentApi
 dotnet run
+Run tests:
+
+bash
+
+
 dotnet test tests/EquipmentApi.Tests
+Run with Docker:
+
+bash
+
+
+docker build -t equipment-api .
+docker run -p 8080:8080 equipment-api
+The API listens on http://localhost:5056 with dotnet run, and on http://localhost:8080 in Docker.
 
 Project Structure
 
-EquipmentApi/
-├── Controllers/      # API controllers
-├── Data/             # AppDbContext
-├── Dtos/             # Data transfer objects
-├── Migrations/       # EF Core migrations
-├── Models/           # Entities
-├── Services/         # Business logic
-├── Program.cs        # Entry point
-└── EquipmentApi.http # Test requests
-├── tests/ # xUnit tests (AlertServiceTests)
+
+├── EquipmentApi/          # API project
+│   ├── Controllers/       # API controllers
+│   ├── Data/              # AppDbContext
+│   ├── Dtos/              # Data transfer objects
+│   ├── Migrations/        # EF Core migrations
+│   ├── Models/            # Entities
+│   ├── Services/          # Business logic
+│   ├── Program.cs         # Entry point
+│   └── EquipmentApi.http  # Test requests
+├── tests/                 # xUnit tests (AlertServiceTests)
 ├── .github/workflows/     # CI workflow (ci.yml)
 ├── Dockerfile             # Multi-stage Docker build
 └── .dockerignore
-
-
-
 Endpoints
 Method	Path	Description
 GET	/api/Equipment	Get all equipment
@@ -55,69 +71,65 @@ DELETE	/api/Equipment/{id}	Delete equipment; returns 204 on success
 GET	/api/Equipment/{id}/logs	Get logs for one device, newest first, paginated
 GET	/api/Equipment/{id}/alerts	Error count and alert status for one device in the last 24 hours
 POST	/api/Equipment/{id}/logs	Add a log to one device; returns 201 on success
-
-
 SQL Notes
-1. JOIN — which device does each log belong to
+JOIN — which device does each log belong to
+sql
+
 
 SELECT e.Name, l.Message, l.CreatedAt
 FROM Equipment e
 JOIN LogEntries l ON l.EquipmentId = e.Id
 WHERE l.Level = 'Error';
-
-
 Result: 2 rows — "Motor overheating" and "Temperature high", both on the same device.
 Matches GET /api/Equipment/1/logs.
 
 EF equivalent: _context.Equipment.Include(e => e.Logs), or query LogEntries and read l.Equipment.Name — EF generates the JOIN for you.
 
-2. GROUP BY — error count per device
+GROUP BY — error count per device
+sql
+
 
 SELECT EquipmentId, COUNT(*) AS ErrorCount
 FROM LogEntries
 WHERE Level = 'Error'
 GROUP BY EquipmentId;
-SELECT EquipmentId, COUNT(*) AS ErrorCount
-FROM LogEntries
-WHERE Level = 'Error'
-GROUP BY EquipmentId;
-
 Result: EquipmentId 1 → ErrorCount 2.
 Matches GET /api/Equipment/1/alerts (errorCount: 2).
 
 EF equivalent:
 
+csharp
+
+
 _context.LogEntries
     .Where(l => l.Level == "Error")
     .GroupBy(l => l.EquipmentId)
     .Select(g => new { EquipmentId = g.Key, ErrorCount = g.Count() });
+Index — make the logs query faster
+sql
 
-
-3. Index — make the logs query faster
 
 CREATE INDEX IX_LogEntry_Equipment_Timestamp ON LogEntries (EquipmentId, CreatedAt);
-
-
 EXPLAIN QUERY PLAN before creating the index:
+
+
 
 SEARCH LogEntries USING INDEX IX_LogEntries_EquipmentId (EquipmentId=?)
 USE TEMP B-TREE FOR ORDER BY
-
-
 After:
 
+
+
 SEARCH LogEntries USING INDEX IX_LogEntry_Equipment_Timestamp (EquipmentId=?)
-
-
 The foreign key column already had an auto-created index (EF Core creates indexes for foreign keys), so the lookup was already indexed. The composite index also covers ORDER BY CreatedAt DESC, so the temporary sort (TEMP B-TREE) is gone.
 
 Note: this index was created directly in the local equipment.db for learning. To keep it in code, add HasIndex in OnModelCreating and generate a migration.
 
 LINQ to SQL cheat sheet
+
 LINQ	SQL
 .Where(...)	WHERE
 .OrderByDescending(...)	ORDER BY ... DESC
 .Skip(n).Take(m)	LIMIT m OFFSET n
 .Include(e => e.Logs)	JOIN
 .GroupBy(...) + .Count()	GROUP BY + COUNT(*)
-
