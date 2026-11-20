@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using EquipmentApi.Models;
 using EquipmentApi.Services;
 using EquipmentApi.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EquipmentApi.Controllers;
 
@@ -125,6 +126,7 @@ public class EquipmentController : ControllerBase
 
 
     [HttpPost]
+    [Authorize]
     public IActionResult Create([FromBody] CreateEquipmentDto dto)
     {
         _logger.LogInformation("Create equipment request received. Name: {Name}", dto.Name);
@@ -136,6 +138,7 @@ public class EquipmentController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public IActionResult Update(int id, [FromBody] CreateEquipmentDto dto)
     {
         _logger.LogInformation("Update equipment request received. Id: {Id}", id);
@@ -156,6 +159,7 @@ public class EquipmentController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public IActionResult Delete(int id)
     {
         _logger.LogInformation("Delete equipment request received. Id: {Id}", id);

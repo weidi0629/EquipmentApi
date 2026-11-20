@@ -9,8 +9,9 @@ GET {{EquipmentApi_HostAddress}}/api/Equipment/3
 ### 新增，应该返回 201，id 是 3
 POST {{EquipmentApi_HostAddress}}/api/Equipment
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW4iLCJleHAiOjE3OTUxOTc1NDMsImlzcyI6IkVxdWlwbWVudEFwaSIsImF1ZCI6IkVxdWlwbWVudEFwaSJ9.9HZX40MGZa0MpbmaI3SATTqVmGH8FpmAfbR31U36MPQ
 
-{"name": "Line3-Drill", "status": "Normal"}
+{"name": "Line7-Drill", "status": "Normal"}
 
 ### 修改，应该返回 200，status 变成 Fault
 PUT {{EquipmentApi_HostAddress}}/api/Equipment/3
@@ -71,3 +72,13 @@ POST http://localhost:5056/api/equipment/1/logs
 Content-Type: application/json
 
 {"message": "Error test 1", "level": "Error"}
+
+
+###
+POST {{EquipmentApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "password123"
+}
